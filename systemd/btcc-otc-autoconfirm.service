@@ -1,0 +1,14 @@
+[Unit]
+Description=BTCC OTC Auto Confirm
+After=network.target btcc-otc-flask.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/ubuntu/btcc-otc-web
+ExecStart=/usr/bin/python3 /home/ubuntu/btcc-otc-web/auto_confirm.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

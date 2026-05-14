@@ -1,0 +1,501 @@
+     1|     1|<!DOCTYPE html>
+     2|     2|<html lang="zh">
+     3|     3|<head>
+     4|     4|<meta charset="UTF-8">
+     5|     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6|     6|<title>BTCC OTC 交易平台</title>
+     7|     7|<style>
+     8|     8|* { margin: 0; padding: 0; box-sizing: border-box; }
+     9|     9|body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e17; color: #e0e0e0; min-height: 100vh; }
+    10|    10|.header { background: #111827; border-bottom: 1px solid #1f2937; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    11|    11|.header h1 { font-size: 18px; color: #f59e0b; }
+    12|    12|.wallet-area { display: flex; gap: 8px; align-items: center; }
+    13|    13|.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+    14|    14|.btn-primary { background: #f59e0b; color: #000; }
+    15|    15|.btn-primary:hover { background: #d97706; }
+    16|    16|.btn-secondary { background: #374151; color: #e0e0e0; }
+    17|    17|.btn-secondary:hover { background: #4b5563; }
+    18|    18|.btn-danger { background: #dc2626; color: #fff; }
+    19|    19|.btn-danger:hover { background: #b91c1c; }
+    20|    20|.btn-success { background: #10b981; color: #fff; }
+    21|    21|.btn-success:hover { background: #059669; }
+    22|    22|.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    23|    23|.wallet-info { font-size: 13px; color: #9ca3af; }
+    24|    24|.wallet-info span { color: #10b981; }
+    25|    25|.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    26|    26|.tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #1f2937; }
+    27|    27|.tab { padding: 12px 24px; cursor: pointer; border-bottom: 2px solid transparent; color: #9ca3af; font-size: 15px; }
+    28|    28|.tab.active { color: #f59e0b; border-bottom-color: #f59e0b; }
+    29|    29|.tab:hover { color: #e0e0e0; }
+    30|    30|.panel { display: none; }
+    31|    31|.panel.active { display: block; }
+    32|    32|.card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+    33|    33|.card h3 { color: #f59e0b; margin-bottom: 16px; font-size: 16px; }
+    34|    34|.form-group { margin-bottom: 16px; }
+    35|    35|.form-group label { display: block; margin-bottom: 6px; color: #9ca3af; font-size: 13px; }
+    36|    36|.form-group input, .form-group select { width: 100%; padding: 10px 12px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: #e0e0e0; font-size: 14px; }
+    37|    37|.form-group input:focus, .form-group select:focus { outline: none; border-color: #f59e0b; }
+    38|    38|.order-list { display: grid; gap: 12px; max-height: 70vh; overflow-y: auto; padding-right: 4px; }
+    39|    39|.order-list::-webkit-scrollbar { width: 6px; }
+    40|    40|.order-list::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    41|    41|.order-list::-webkit-scrollbar-track { background: transparent; }
+    42|    42|.order-card { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 16px; }
+    43|    43|.order-card .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    44|    44|.order-card .order-id { color: #f59e0b; font-weight: 600; }
+    45|    45|.order-card .order-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    46|    46|.status-open { background: #064e3b; color: #10b981; }
+    47|    47|.status-accepted { background: #1e3a5f; color: #60a5fa; }
+    48|    48|.status-completed { background: #14532d; color: #4ade80; }
+    49|    49|.status-cancelled { background: #451a03; color: #fb923c; }
+    50|    50|.order-card .order-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+    51|    51|.order-card .order-details .label { color: #6b7280; }
+    52|    52|.order-card .order-details .value { color: #e0e0e0; }
+    53|    53|.order-card .order-actions { margin-top: 12px; display: flex; gap: 8px; }
+    54|    54|.connect-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    55|    55|.connect-modal.show { display: flex; }
+    56|    56|.modal-content { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 32px; width: 360px; }
+    57|    57|.modal-content h3 { text-align: center; margin-bottom: 24px; color: #e0e0e0; }
+    58|    58|.wallet-option { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid #374151; border-radius: 8px; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+    59|    59|.wallet-option:hover { border-color: #f59e0b; background: #1f2937; }
+    60|    60|.wallet-option img { width: 32px; height: 32px; border-radius: 6px; }
+    61|    61|.wallet-option span { font-size: 15px; font-weight: 500; }
+    62|    62|.empty-state { text-align: center; padding: 48px; color: #6b7280; }
+    63|    63|.toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; font-size: 14px; z-index: 2000; animation: slideIn 0.3s; }
+    64|    64|.toast-success { background: #065f46; color: #10b981; border: 1px solid #10b981; }
+    65|    65|.toast-error { background: #7f1d1d; color: #fca5a5; border: 1px solid #dc2626; }
+    66|    66|@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    67|    67|.info-bar { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #94a3b8; }
+    68|    68|.info-bar strong { color: #f59e0b; }
+    69|    69|.order-tip { margin-top: 12px; padding: 12px; border-radius: 6px; background: #1e293b; border: 1px solid #334155; font-size: 13px; line-height: 1.8; }
+    70|    70|.order-tip p { margin: 0; }
+    71|    71|.order-tip strong { color: #f59e0b; }
+    72|    72|.order-tip code { color: #10b981; font-size: 12px; }
+    73|    73|.order-tip.seller-action { border-color: #f59e0b; background: #1c1917; }
+    74|    74|.order-tip.completed { border-color: #10b981; }
+    75|    75|.order-tip.cancelled { border-color: #6b7280; }
+    76|    76|</style>
+    77|    77|</head>
+    78|    78|<body>
+    79|    79|
+    80|    80|<div class="header">
+    81|    81|    <h1>⚡ BTCC OTC 交易平台</h1>
+    82|    82|    <div class="wallet-area">
+    83|    83|        <div class="wallet-info" id="walletInfo"></div>
+    84|    84|        <button class="btn btn-primary" id="connectBtn" onclick="showConnectModal()">连接钱包</button>
+    85|    85|    </div>
+    86|    86|</div>
+    87|    87|
+    88|    88|<div class="container">
+    89|    89|    <div class="info-bar">
+    90|    90|        <strong>合约地址：</strong> 0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52 (Polygon) &nbsp;|&nbsp;
+    91|    91|        <strong>手续费：</strong> 2.5% &nbsp;|&nbsp;
+    92|    92|        <strong>支持代币：</strong> USDC / USDT &nbsp;|&nbsp;
+    93|    93|        <strong>超时：</strong> 接单后30分钟未完成自动取消
+    94|    94|    </div>
+    95|    95|
+    96|    96|    <div class="card" style="margin-bottom:20px;padding:16px 20px;">
+    97|    97|        <h3 style="margin-bottom:12px;font-size:15px;">📖 使用流程</h3>
+    98|    98|        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;line-height:1.8;">
+    99|    99|            <div>
+   100|   100|                <strong style="color:#10b981;">卖家（卖 BTCC 换 USDC）</strong>
+   101|   101|                <ol style="padding-left:16px;margin-top:6px;color:#d1d5db;">
+   102|   102|                    <li>连接钱包（MetaMask / OKX）</li>
+   103|   103|                    <li>点击「挂卖单」，填写数量和单价</li>
+   104|   104|                    <li>将 BTCC 转到平台给出的托管地址</li>
+   105|   105|                    <li>到账后自动上链挂单，等待买家接单</li>
+   106|   106|                    <li>买家接单后 USDC 自动到你钱包</li>
+   107|   107|                </ol>
+   108|   108|            </div>
+   109|   109|            <div>
+   110|   110|                <strong style="color:#60a5fa;">买家（用 USDC 买 BTCC）</strong>
+   111|   111|                <ol style="padding-left:16px;margin-top:6px;color:#d1d5db;">
+   112|   112|                    <li>连接钱包（MetaMask / OKX）</li>
+   113|   113|                    <li>在市场订单中选择合适的卖单</li>
+   114|   114|                    <li>点击「接单」，输入你的 BTCC 收款地址</li>
+   115|   115|                    <li>首次需授权 USDC，之后一键接单</li>
+   116|   116|                    <li>平台自动转 BTCC 到你的地址</li>
+   117|   117|                </ol>
+   118|   118|            </div>
+   119|   119|        </div>
+   120|   120|        <p style="margin-top:12px;font-size:12px;color:#6b7280;">💡 全程链上托管，资金安全有保障。卖家 BTCC 锁定后才挂单，买家 USDC 锁定后平台自动完成交割。</p>
+   121|   121|    </div>
+   122|   122|
+   123|   123|    <div class="tabs">
+   124|   124|        <div class="tab active" onclick="switchTab('market')">市场订单</div>
+   125|   125|        <div class="tab" onclick="switchTab('create')">挂卖单</div>
+   126|   126|        <div class="tab" onclick="switchTab('history')">成交记录</div>
+   127|   127|        <div class="tab" onclick="switchTab('my')">我的订单</div>
+   128|   128|    </div>
+   129|   129|
+   130|   130|    <!-- 市场订单 -->
+   131|   131|    <div class="panel active" id="panel-market">
+   132|   132|        <div class="order-list" id="marketOrders">
+   133|   133|            <div class="empty-state">加载中...</div>
+   134|   134|        </div>
+   135|   135|    </div>
+   136|   136|
+   137|   137|    <!-- 挂卖单 -->
+   138|   138|    <div class="panel" id="panel-create">
+   139|   139|        <div class="card">
+   140|   140|            <h3>挂卖单（卖 BTCC 换 USDC/USDT）</h3>
+   141|   141|            
+   142|   142|            <!-- 步骤1：填写信息 -->
+   143|   143|            <div id="sell-step1">
+   144|   144|                <div class="form-group">
+   145|   145|                    <label>收款代币</label>
+   146|   146|                    <select id="tokenSelect">
+   147|   147|                        <option value="USDC">USDC</option>
+   148|   148|                        <option value="USDT">USDT</option>
+   149|   149|                    </select>
+   150|   150|                </div>
+   151|   151|                <div class="form-group">
+   152|   152|                    <label>卖出 BTCC 数量</label>
+   153|   153|                    <input type="number" id="btccAmount" placeholder="例如: 50" step="0.01" min="0">
+   154|   154|                </div>
+   155|   155|                <div class="form-group">
+   156|   156|                    <label>单价（每 BTCC 多少 USDC/USDT）</label>
+   157|   157|                    <input type="number" id="unitPrice" placeholder="例如: 0.5" step="0.0001" min="0">
+   158|   158|                </div>
+   159|   159|                <div class="form-group">
+   160|   160|                    <label>总价（自动计算）</label>
+   161|   161|                    <input type="text" id="totalPrice" readonly placeholder="自动计算">
+   162|   162|                </div>
+   163|   163|                <button class="btn btn-primary" onclick="submitSellIntent()" id="submitIntentBtn">下一步：获取托管地址</button>
+   164|   164|            </div>
+   165|   165|            
+   166|   166|            <!-- 步骤2：转 BTCC -->
+   167|   167|            <div id="sell-step2" style="display:none;">
+   168|   168|                <div class="order-tip seller-action">
+   169|   169|                    <p>📮 请将 <strong id="step2-amount"></strong> BTCC 转到以下托管地址：</p>
+   170|   170|                    <p><code id="step2-deposit-addr" onclick="navigator.clipboard.writeText(this.textContent);showToast('已复制')" style="cursor:pointer;background:#374151;padding:4px 8px;border-radius:4px;font-size:14px;"></code></p>
+   171|   171|                    <p style="color:#9ca3af;font-size:12px;margin-top:8px;">转账后平台自动检测到账（约30秒），到账后点击"确认挂单"上链</p>
+   172|   172|                    <p id="step2-status" style="color:#f59e0b;margin-top:12px;">⏳ 等待 BTCC 到账...</p>
+   173|   173|                </div>
+   174|   174|                <button class="btn btn-primary" onclick="confirmCreateOrder()" id="confirmCreateBtn" disabled>确认挂单（等待到账）</button>
+   175|   175|                <button class="btn btn-danger" onclick="cancelIntent()" style="margin-top:8px;">取消</button>
+   176|   176|            </div>
+   177|   177|        </div>
+   178|   178|    </div>
+   179|   179|
+   180|   180|    <!-- 成交记录 -->
+   181|   181|    <div class="panel" id="panel-history">
+   182|   182|        <div class="order-list" id="historyOrders">
+   183|   183|            <div class="empty-state">加载中...</div>
+   184|   184|        </div>
+   185|   185|    </div>
+   186|   186|
+   187|   187|    <!-- 我的订单 -->
+   188|   188|    <div class="panel" id="panel-my">
+   189|   189|        <div class="order-list" id="myOrders">
+   190|   190|            <div class="empty-state">请先连接钱包</div>
+   191|   191|        </div>
+   192|   192|    </div>
+   193|   193|</div>
+   194|   194|
+   195|   195|<!-- 连接钱包弹窗 -->
+   196|   196|<div class="connect-modal" id="connectModal">
+   197|   197|    <div class="modal-content">
+   198|   198|        <h3>连接钱包</h3>
+   199|   199|        <div class="wallet-option" onclick="connectWallet('metamask')">
+   200|   200|            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask">
+   201|   201|            <span>MetaMask</span>
+   202|   202|        </div>
+   203|   203|        <div class="wallet-option" onclick="connectWallet('okx')">
+   204|   204|            <img src="https://static.okx.com/cdn/assets/imgs/247/58E63FEA47A2B7D7.png" alt="OKX Wallet">
+   205|   205|            <span>OKX Wallet</span>
+   206|   206|        </div>
+   207|   207|        <div style="text-align:center;margin-top:16px;">
+   208|   208|            <button class="btn btn-secondary" onclick="hideConnectModal()">取消</button>
+   209|   209|        </div>
+   210|   210|    </div>
+   211|   211|</div>
+   212|   212|
+   213|   213|<script src="/otc/static/ethers.min.js"></script>
+   214|   214|<script>
+   215|   215|if (typeof ethers === 'undefined') {
+   216|   216|    document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#f59e0b;font-size:18px;">ethers.js 加载失败，请刷新页面</div>';
+   217|   217|}
+   218|   218|</script>
+   219|   219|<script>
+   220|   220|{% raw %}
+   221|   221|const CONTRACT_ADDRESS = "0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52";
+   222|   222|const POLYGON_CHAIN_ID = 137;
+   223|   223|const RPC_URL = "https://polygon-bor-rpc.publicnode.com";
+   224|   224|const TOKENS=***
+   225|   225|    USDC: { address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", decimals: 6 },
+   226|   226|    USDT: { address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", decimals: 6 }
+   227|   227|};
+   228|   228|
+   229|   229|const CONTRACT_ABI = [
+   230|   230|    "function createSellOrder(address token, uint256 btccAmount, uint256 unitPrice) returns (uint256)",
+   231|   231|    "function createSellOrderFor(address seller, address token, uint256 btccAmount, uint256 unitPrice) returns (uint256)",
+   232|   232|    "function acceptOrder(uint256 orderId, string btccAddress)",
+   233|   233|    "function cancelOrder(uint256 orderId)",
+   234|   234|    "function cancelAcceptance(uint256 orderId)",
+   235|   235|    "function buyerCancelAcceptance(uint256 orderId)",
+   236|   236|    "function confirmRelease(uint256 orderId, string btccTxid)",
+   237|   237|    "function getOrder(uint256 orderId) view returns (tuple(uint256 orderId, address seller, address buyer, address token, uint256 btccAmount, uint256 unitPrice, uint256 tokenAmount, string btccAddress, string btccTxid, uint8 status, uint256 createdAt, uint256 acceptedAt))",
+   238|   238|    "function getOpenOrders(uint256 offset, uint256 limit) view returns (tuple(uint256 orderId, address seller, address buyer, address token, uint256 btccAmount, uint256 unitPrice, uint256 tokenAmount, string btccAddress, string btccTxid, uint8 status, uint256 createdAt, uint256 acceptedAt)[])",
+   239|   239|    "function nextOrderId() view returns (uint256)",
+   240|   240|    "function platformAuthority() view returns (address)",
+   241|   241|    "function feeRecipient() view returns (address)",
+   242|   242|    "function ACCEPT_TIMEOUT() view returns (uint256)"
+   243|   243|];
+   244|   244|
+   245|   245|const ERC20_ABI = [
+   246|   246|    "function approve(address spender, uint256 amount) returns (bool)",
+   247|   247|    "function allowance(address owner, address spender) view returns (uint256)",
+   248|   248|    "function balanceOf(address account) view returns (uint256)",
+   249|   249|    "function decimals() view returns (uint8)"
+   250|   250|];
+   251|   251|
+   252|   252|let web3Provider = null;
+   253|   253|let web3Signer = null;
+   254|   254|let userAddress = null;
+   255|   255|let otcContract = null;
+   256|   256|let walletType = null;
+   257|   257|
+   258|   258|const STATUS_MAP = ['开放中', '已接单', '已完成', '已取消'];
+   259|   259|const STATUS_CLASS = ['status-open', 'status-accepted', 'status-completed', 'status-cancelled'];
+   260|   260|
+   261|   261|function showConnectModal() { document.getElementById('connectModal').classList.add('show'); }
+   262|   262|function hideConnectModal() { document.getElementById('connectModal').classList.remove('show'); }
+   263|   263|
+   264|   264|function showToast(msg, type='success') {
+   265|   265|    const t = document.createElement('div');
+   266|   266|    t.className = `toast toast-${type}`;
+   267|   267|    t.textContent = msg;
+   268|   268|    document.body.appendChild(t);
+   269|   269|    setTimeout(() => t.remove(), 4000);
+   270|   270|}
+   271|   271|
+   272|   272|async function switchChain(p) {
+   273|   273|    try {
+   274|   274|        await p.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
+   275|   275|    } catch (e) {
+   276|   276|        if (e.code === 4902) {
+   277|   277|            await p.request({ method: 'wallet_addEthereumChain', params: [{
+   278|   278|                chainId: '0x89', chainName: 'Polygon', nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+   279|   279|                rpcUrls: [RPC_URL], blockExplorerUrls: ['https://polygonscan.com']
+   280|   280|            }] });
+   281|   281|        }
+   282|   282|    }
+   283|   283|}
+   284|   284|
+   285|   285|async function connectWallet(type) {
+   286|   286|    hideConnectModal();
+   287|   287|    let ethProvider;
+   288|   288|    if (type === 'metamask') {
+   289|   289|        // MetaMask 或兼容注入
+   290|   290|        ethProvider = window.ethereum;
+   291|   291|        if (!ethProvider) {
+   292|   292|            if (confirm('未检测到 MetaMask 插件。\n\n如果你在手机上，请用 MetaMask App 内置浏览器打开本页面。\n\n点击确定跳转到 MetaMask 下载页。')) {
+   293|   293|                window.open('https://metamask.io/download/', '_blank');
+   294|   294|            }
+   295|   295|            return;
+   296|   296|        }
+   297|   297|    } else if (type === 'okx') {
+   298|   298|        // OKX Wallet 注入
+   299|   299|        ethProvider = window.okxwallet || (window.ethereum && window.ethereum.isOkxWallet ? window.ethereum : null);
+   300|   300|        if (!ethProvider) {
+   301|   301|            if (confirm('未检测到 OKX Wallet 插件。\n\n如果你在手机上，请用 OKX App 内置浏览器（发现→DApp浏览器）打开本页面。\n\n点击确定跳转到 OKX Wallet 下载页。')) {
+   302|   302|                window.open('https://www.okx.com/web3', '_blank');
+   303|   303|            }
+   304|   304|            return;
+   305|   305|        }
+   306|   306|    }
+   307|   307|    try {
+   308|   308|        showToast('正在连接钱包...');
+   309|   309|        await ethProvider.request({ method: 'eth_requestAccounts' });
+   310|   310|        await switchChain(ethProvider);
+   311|   311|        web3Provider = new ethers.BrowserProvider(ethProvider);
+   312|   312|        web3Signer = await web3Provider.getSigner();
+   313|   313|        userAddress = await web3Signer.getAddress();
+   314|   314|        walletType = type;
+   315|   315|        otcContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, web3Signer);
+   316|   316|        document.getElementById('walletInfo').innerHTML = `<span>${userAddress.slice(0,6)}...${userAddress.slice(-4)}</span> (${type === 'okx' ? 'OKX' : 'MetaMask'})`;
+   317|   317|        document.getElementById('connectBtn').textContent = '已连接';
+   318|   318|        document.getElementById('connectBtn').disabled = true;
+   319|   319|        showToast('钱包连接成功');
+   320|   320|        loadOrders();
+   321|   321|    } catch (e) {
+   322|   322|        showToast(e.message || '连接失败', 'error');
+   323|   323|    }
+   324|   324|}
+   325|   325|
+   326|   326|async function loadOrders() {
+   327|   327|    const readProvider = new ethers.JsonRpcProvider(RPC_URL);
+   328|   328|    const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readProvider);
+   329|   329|    try {
+   330|   330|        const nextId = await readContract.nextOrderId();
+   331|   331|        if (Number(nextId) === 0) {
+   332|   332|            document.getElementById('marketOrders').innerHTML = '<div class="empty-state">暂无开放订单，快来创建第一个吧</div>';
+   333|   333|            if (userAddress) document.getElementById('myOrders').innerHTML = '<div class="empty-state">暂无订单</div>';
+   334|   334|            return;
+   335|   335|        }
+   336|   336|        const orders = await readContract.getOpenOrders(0, 50);
+   337|   337|        renderMarketOrders(orders);
+   338|   338|        if (userAddress) renderMyOrders(readContract);
+   339|   339|    } catch (e) {
+   340|   340|        console.error('加载订单失败:', e);
+   341|   341|        document.getElementById('marketOrders').innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+   342|   342|    }
+   343|   343|}
+   344|   344|
+   345|   345|function getTokenSymbol(addr) {
+   346|   346|    const a = addr.toLowerCase();
+   347|   347|    if (a === TOKENS.USDC.address.toLowerCase()) return 'USDC';
+   348|   348|    if (a === TOKENS.USDT.address.toLowerCase()) return 'USDT';
+   349|   349|    return addr.slice(0,8) + '...';
+   350|   350|}
+   351|   351|
+   352|   352|function formatAmount(amount, decimals=6) {
+   353|   353|    return (Number(amount) / 10**decimals).toFixed(2);
+   354|   354|}
+   355|   355|
+   356|   356|function timeAgo(ts) {
+   357|   357|    const diff = Math.floor(Date.now()/1000) - Number(ts);
+   358|   358|    if (diff < 60) return `${diff}秒前`;
+   359|   359|    if (diff < 3600) return `${Math.floor(diff/60)}分钟前`;
+   360|   360|    if (diff < 86400) return `${Math.floor(diff/3600)}小时前`;
+   361|   361|    return `${Math.floor(diff/86400)}天前`;
+   362|   362|}
+   363|   363|
+   364|   364|function renderMarketOrders(orders) {
+   365|   365|    const el = document.getElementById('marketOrders');
+   366|   366|    if (!orders || orders.length === 0) {
+   367|   367|        el.innerHTML = '<div class="empty-state">暂无开放订单</div>';
+   368|   368|        return;
+   369|   369|    }
+   370|   370|    // 按创建时间倒序（最新的排前面）
+   371|   371|    orders = [...orders].sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
+   372|   372|    el.innerHTML = orders.map(o => {
+   373|   373|        const unitP = Number(o.unitPrice) / 1e6;
+   374|   374|        const btccAmt = Number(o.btccAmount) / 1e8;
+   375|   375|        const totalAmt = Number(o.tokenAmount) / 1e6;
+   376|   376|        return `
+   377|   377|        <div class="order-card">
+   378|   378|            <div class="order-header">
+   379|   379|                <span class="order-id">订单 #${o.orderId}</span>
+   380|   380|                <span class="order-status ${STATUS_CLASS[Number(o.status)]}">${STATUS_MAP[Number(o.status)]}</span>
+   381|   381|            </div>
+   382|   382|            <div class="order-details">
+   383|   383|                <div><span class="label">卖出：</span><span class="value">${btccAmt} BTCC</span></div>
+   384|   384|                <div><span class="label">单价：</span><span class="value">${unitP} ${getTokenSymbol(o.token)}/BTCC</span></div>
+   385|   385|                <div><span class="label">总价：</span><span class="value">${totalAmt} ${getTokenSymbol(o.token)}</span></div>
+   386|   386|                <div><span class="label">卖家：</span><span class="value">${o.seller.slice(0,6)}...${o.seller.slice(-4)}</span></div>
+   387|   387|                <div><span class="label">创建：</span><span class="value">${timeAgo(o.createdAt)}</span></div>
+   388|   388|            </div>
+   389|   389|            <div class="order-actions">
+   390|   390|                ${userAddress && o.seller.toLowerCase() !== userAddress.toLowerCase() ? `<button class="btn btn-success" onclick="acceptOrder(${o.orderId})">接单（买 BTCC）</button>` : ''}
+   391|   391|            </div>
+   392|   392|        </div>`;
+   393|   393|    }).join('');
+   394|   394|}
+   395|   395|
+   396|   396|async function renderMyOrders(readContract) {
+   397|   397|    const el = document.getElementById('myOrders');
+   398|   398|    const nextId = await readContract.nextOrderId();
+   399|   399|    const myOrders = [];
+   400|   400|    for (let i = 0; i < Number(nextId); i++) {
+   401|   401|        const o = await readContract.getOrder(i);
+   402|   402|        if (o.buyer.toLowerCase() === userAddress.toLowerCase() || o.seller.toLowerCase() === userAddress.toLowerCase()) {
+   403|   403|            myOrders.push(o);
+   404|   404|        }
+   405|   405|    }
+   406|   406|    if (myOrders.length === 0) {
+   407|   407|        el.innerHTML = '<div class="empty-state">暂无订单</div>';
+   408|   408|        return;
+   409|   409|    }
+   410|   410|    // 排序：进行中(Accepted=1) > 开放(Open=0) > 已完成(Completed=2) > 已取消(Cancelled=3)，同状态按时间倒序
+   411|   411|    const statusPriority = {1: 0, 0: 1, 2: 2, 3: 3};
+   412|   412|    myOrders.sort((a, b) => {
+   413|   413|        const pa = statusPriority[Number(a.status)] ?? 9;
+   414|   414|        const pb = statusPriority[Number(b.status)] ?? 9;
+   415|   415|        if (pa !== pb) return pa - pb;
+   416|   416|        return Number(b.createdAt) - Number(a.createdAt);
+   417|   417|    });
+   418|   418|    el.innerHTML = myOrders.map(o => {
+   419|   419|        const isBuyer = o.buyer.toLowerCase() === userAddress.toLowerCase();
+   420|   420|        const isSeller = o.seller.toLowerCase() === userAddress.toLowerCase();
+   421|   421|        const status = Number(o.status);
+   422|   422|        const unitP = Number(o.unitPrice) / 1e6;
+   423|   423|        const btccAmt = Number(o.btccAmount) / 1e8;
+   424|   424|        const totalAmt = Number(o.tokenAmount) / 1e6;
+   425|   425|        
+   426|   426|        let actionHtml = '';
+   427|   427|        let infoHtml = '';
+   428|   428|        
+   429|   429|        if (status === 0 && isSeller) {
+   430|   430|            actionHtml = `<button class="btn btn-danger" onclick="cancelOrder(${o.orderId})">取消挂单</button>`;
+   431|   431|            infoHtml = '<div class="order-tip">⏳ 等待买家接单...</div>';
+   432|   432|        } else if (status === 1 && isSeller) {
+   433|   433|            infoHtml = `<div class="order-tip seller-action">
+   434|   434|                <p>✅ 买家已接单并锁定 ${totalAmt} ${getTokenSymbol(o.token)}</p>
+   435|   435|                <p>请将 <strong>${btccAmt} BTCC</strong> 转到平台托管地址</p>
+   436|   436|                <p>📮 托管地址：<code onclick="navigator.clipboard.writeText(this.dataset.addr);showToast('已复制')" style="cursor:pointer;background:#374151;padding:2px 6px;border-radius:4px;" id="deposit-addr-${o.orderId}">加载中...</code></p>
+   437|   437|                <p style="color:#f59e0b;font-size:12px;margin-top:8px;">⚠️ 30分钟内未转账，接单将被自动取消</p>
+   438|   438|            </div>`;
+   439|   439|            setTimeout(() => loadDepositAddress(Number(o.orderId), o.btccAddress, btccAmt), 100);
+   440|   440|        } else if (status === 1 && isBuyer) {
+   441|   441|            infoHtml = `<div class="order-tip">
+   442|   442|                <p>✅ 你已接单，等待卖家转 BTCC 到平台</p>
+   443|   443|                <p>📮 你的收款地址：<code>${escapeHtml(o.btccAddress)}</code></p>
+   444|   444|                <p style="color:#9ca3af;font-size:12px;margin-top:8px;">卖家30分钟内未转账将自动取消接单，你的 ${getTokenSymbol(o.token)} 会退回</p>
+   445|   445|            </div>`;
+   446|   446|            actionHtml = `<button class="btn btn-danger" onclick="buyerCancelAcceptance(${o.orderId})">取消接单</button>`;
+   447|   447|        } else if (status === 2) {
+   448|   448|            infoHtml = `<div class="order-tip completed"><p>🎉 交易完成！BTCC txid: ${escapeHtml(o.btccTxid) || '已确认'}</p></div>`;
+   449|   449|        } else if (status === 3) {
+   450|   450|            infoHtml = '<div class="order-tip cancelled"><p>❌ 订单已取消</p></div>';
+   451|   451|        }
+   452|   452|        
+   453|   453|        return `
+   454|   454|        <div class="order-card">
+   455|   455|            <div class="order-header">
+   456|   456|                <span class="order-id">订单 #${o.orderId} ${isSeller ? '(我是卖家)' : '(我是买家)'}</span>
+   457|   457|                <span class="order-status ${STATUS_CLASS[status]}">${STATUS_MAP[status]}</span>
+   458|   458|            </div>
+   459|   459|            <div class="order-details">
+   460|   460|                <div><span class="label">BTCC：</span><span class="value">${btccAmt} BTCC</span></div>
+   461|   461|                <div><span class="label">单价：</span><span class="value">${unitP} ${getTokenSymbol(o.token)}/BTCC</span></div>
+   462|   462|                <div><span class="label">总价：</span><span class="value">${totalAmt} ${getTokenSymbol(o.token)}</span></div>
+   463|   463|                <div><span class="label">卖家：</span><span class="value">${o.seller.slice(0,6)}...${o.seller.slice(-4)}</span></div>
+   464|   464|                <div><span class="label">买家：</span><span class="value">${o.buyer === '0x0000000000000000000000000000000000000000' ? '待接单' : o.buyer.slice(0,6)+'...'+o.buyer.slice(-4)}</span></div>
+   465|   465|                <div><span class="label">创建：</span><span class="value">${timeAgo(o.createdAt)}</span></div>
+   466|   466|            </div>
+   467|   467|            ${infoHtml}
+   468|   468|            <div class="order-actions">${actionHtml}</div>
+   469|   469|        </div>`;
+   470|   470|    }).join('');
+   471|   471|}
+   472|   472|
+   473|   473|let currentIntentId = null;
+   474|   474|let intentCheckInterval = null;
+   475|   475|
+   476|   476|async function submitSellIntent() {
+   477|   477|    if (!web3Signer) { showToast('请先连接钱包', 'error'); return; }
+   478|   478|    const tokenSymbol = document.getElementById('tokenSelect').value;
+   479|   479|    const btccAmountRaw = document.getElementById('btccAmount').value;
+   480|   480|    const unitPriceRaw = document.getElementById('unitPrice').value;
+   481|   481|    if (!btccAmountRaw || !unitPriceRaw) { showToast('请填写完整', 'error'); return; }
+   482|   482|
+   483|   483|    const token = TOKENS[tokenSymbol];
+   484|   484|    try {
+   485|   485|        document.getElementById('submitIntentBtn').disabled = true;
+   486|   486|        const resp = await fetch('/otc/api/create_sell_intent', {
+   487|   487|            method: 'POST',
+   488|   488|            headers: {'Content-Type': 'application/json'},
+   489|   489|            body: JSON.stringify({
+   490|   490|                seller_address: userAddress,
+   491|   491|                token: token.address,
+   492|   492|                btcc_amount: parseFloat(btccAmountRaw),
+   493|   493|                unit_price: parseFloat(unitPriceRaw)
+   494|   494|            })
+   495|   495|        });
+   496|   496|        const data = await resp.json();
+   497|   497|        if (data.error) { showToast(data.error, 'error'); return; }
+   498|   498|
+   499|   499|        currentIntentId = data.intent_id;
+   500|   500|        document.getElementById('sell-step1').style.display = 'none';
+   501|

@@ -1,0 +1,14 @@
+[Unit]
+Description=BTCC OTC Flask Backend
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/ubuntu/btcc-otc-web
+ExecStart=/usr/bin/python3 /home/ubuntu/btcc-otc-web/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=BTCC OTC Safeguard
+After=network.target btcc-otc-autoconfirm.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/ubuntu/btcc-otc-web
+ExecStart=/usr/bin/python3 /home/ubuntu/btcc-otc-web/safeguard.py
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
