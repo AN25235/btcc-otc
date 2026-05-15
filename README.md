@@ -114,8 +114,9 @@ python3 safeguard.py confirm <order_id>
 ## 合约
 
 - **地址**：`0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52` (Polygon)
+- **验证**：[Blockscout](https://polygon.blockscout.com/address/0x5f181cb61d4404aae59a81e5205a8a70f3e71f52) | [Sourcify](https://sourcify.dev/#/lookup/0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52)
 - **功能**：Escrow 托管、Token 白名单、超时取消、Authority 代操作
-- **源码**：`contracts/BtccOtcEscrowV2.sol`
+- **源码**：`contracts/BtccOtcEscrowV2.sol`（当前版本）、`contracts/BtccOtcEscrow.sol`（V1）
 
 ## 文件结构
 
@@ -130,7 +131,8 @@ python3 safeguard.py confirm <order_id>
 ├── static/
 │   └── ethers.min.js   # ethers.js v6
 ├── contracts/
-│   └── BtccOtcEscrowV2.sol  # Solidity 合约源码
+│   ├── BtccOtcEscrowV2.sol  # 当前合约 V2.2
+│   └── BtccOtcEscrow.sol    # V1 合约（已弃用）
 ├── systemd/            # systemd 服务文件
 └── README.md
 ```
