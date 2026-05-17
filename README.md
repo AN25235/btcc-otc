@@ -113,10 +113,22 @@ python3 safeguard.py confirm <order_id>
 
 ## 合约
 
-- **地址**：`0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52` (Polygon)
-- **验证**：[Blockscout](https://polygon.blockscout.com/address/0x5f181cb61d4404aae59a81e5205a8a70f3e71f52) | [Sourcify](https://sourcify.dev/#/lookup/0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52)
+同一份合约代码部署在两条链上：
+
+| 链 | 地址 | 验证 |
+|---|---|---|
+| Polygon | `0x5F181CB61d4404aaE59A81E5205A8A70f3E71f52` | [Blockscout](https://polygon.blockscout.com/address/0x5f181cb61d4404aae59a81e5205a8a70f3e71f52) |
+| Base | `0xa854F2e9711F2b8A2C07C16F9d7E2fdd51B46959` | [Basescan](https://basescan.org/address/0xa854F2e9711F2b8A2C07C16F9d7E2fdd51B46959) |
+
 - **功能**：Escrow 托管、Token 白名单、超时取消、Authority 代操作
 - **源码**：`contracts/BtccOtcEscrowV2.sol`（当前版本）、`contracts/BtccOtcEscrow.sol`（V1）
+
+### 支持代币
+
+| 链 | USDC | USDT |
+|---|---|---|
+| Polygon | `0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359` | `0xc2132D05D31c914a87C6611C10748AEb04B58e8F` |
+| Base | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` |
 
 ## 文件结构
 
